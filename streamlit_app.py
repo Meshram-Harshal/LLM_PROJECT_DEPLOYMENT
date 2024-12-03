@@ -5,16 +5,19 @@ from langchain_community.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ChatMessageHistory, ConversationBufferMemory
 from langchain_groq import ChatGroq
-import os
-from pandasai.llm.local_llm import LocalLLM
+from chromadb.config import Settings
 import pandas as pd
+from pandasai.llm.local_llm import LocalLLM
 from pandasai import SmartDataframe
 import streamlit as st
 from bs4 import BeautifulSoup
 import requests
 
-# Initialize GROQ chat using Streamlit secrets
+# Streamlit Secrets
+st.secrets.load_if_needed()
 groq_api_key = st.secrets["GROQ_API_KEY"]
+
+# Initialize GROQ chat
 llm_groq = ChatGroq(
     groq_api_key=groq_api_key, model_name="llama3-70b-8192",
     temperature=0.2
@@ -37,7 +40,10 @@ def process_pdfs(files):
         metadatas.extend(file_metadatas)
 
     embeddings = OllamaEmbeddings(model="nomic-embed-text")
-    docsearch = Chroma.from_texts(texts, embeddings, metadatas=metadatas)
+    # Use in-memory storage for Chroma
+    chroma_settings = Settings(chroma_db_impl="duckdb+memory")
+    docsearch = Chroma.from_texts(texts, embeddings, metadatas=metadatas, settings=chroma_settings)
+
     message_history = ChatMessageHistory()
     memory = ConversationBufferMemory(
         memory_key="chat_history",
@@ -63,7 +69,10 @@ def process_website(url):
     texts = text_splitter.split_text(website_text)
     metadatas = [{"source": f"Website {i}"} for i in range(len(texts))]
     embeddings = OllamaEmbeddings(model="nomic-embed-text")
-    docsearch = Chroma.from_texts(texts, embeddings, metadatas=metadatas)
+    # Use in-memory storage for Chroma
+    chroma_settings = Settings(chroma_db_impl="duckdb+memory")
+    docsearch = Chroma.from_texts(texts, embeddings, metadatas=metadatas, settings=chroma_settings)
+
     message_history = ChatMessageHistory()
     memory = ConversationBufferMemory(
         memory_key="chat_history",
@@ -89,48 +98,12 @@ def chat_with_csv(df, query):
 
 # Streamlit UI
 st.set_page_config(layout='wide')
-st.sidebar.markdown(
-    """
-    <style>
-        .css-1y4m0w1 {
-            margin-top: -50px;
-        }
-        .css-1wa0cu3 {
-            padding-top: 0px;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 st.sidebar.image(
     "./images/images/LOGOD1-removebg-preview.png",
     use_column_width=True,
-    caption=None
 )
 st.title("Multi-file & Website ChatApp powered by LLM")
 input_type = st.sidebar.radio("Select input type", ('PDF', 'CSV', 'Website URL'))
-
-# Display icons for the selected input type
-with st.sidebar.container():
-    st.write("Preview of Selected Input:")
-    if input_type == 'PDF':
-        st.image(
-            "./images/images/pdf.png",
-            caption="PDF Input",
-            width=120
-        )
-    elif input_type == 'CSV':
-        st.image(
-            "./images/images/csv.png",
-            caption="CSV Input",
-            width=120
-        )
-    elif input_type == 'Website URL':
-        st.image(
-            "./images/images/url.png",
-            caption="Website URL Input",
-            width=120
-        )
 
 if input_type == 'PDF':
     input_files = st.sidebar.file_uploader(
