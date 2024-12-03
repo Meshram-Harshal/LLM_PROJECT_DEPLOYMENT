@@ -1,9 +1,10 @@
 import PyPDF2
-from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.embeddings import OllamaEmbeddings  # Updated import
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import ChatMessageHistory, ConversationBufferMemory
+from langchain_community.chat_message_histories import ChatMessageHistory  # Updated import
+from langchain.memory import ConversationBufferMemory
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
@@ -14,7 +15,6 @@ import streamlit as st
 from bs4 import BeautifulSoup
 import requests
 
-
 # Load environment variables using Streamlit secrets
 groq_api_key = st.secrets["GROQ_API_KEY"]
 
@@ -24,7 +24,6 @@ llm_groq = ChatGroq(
     model_name="llama3-70b-8192",
     temperature=0.2
 )
-
 
 # Function to process PDF files
 def process_pdfs(files):
@@ -110,7 +109,7 @@ st.sidebar.markdown(
 )
 st.sidebar.image(
     "./images/images/LOGOD1-removebg-preview.png",
-    use_column_width=True,
+    use_container_width=True,  # Updated here
     caption=None
 )
 st.title("Multi-file & Website ChatApp powered by LLM")
