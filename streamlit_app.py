@@ -6,8 +6,6 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain_community.chat_message_histories import ChatMessageHistory  # Updated import
 from langchain.memory import ConversationBufferMemory
 from langchain_groq import ChatGroq
-from dotenv import load_dotenv
-import os
 from pandasai.llm.local_llm import LocalLLM
 import pandas as pd
 from pandasai import SmartDataframe
