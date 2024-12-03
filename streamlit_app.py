@@ -5,7 +5,6 @@ from langchain_community.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ChatMessageHistory, ConversationBufferMemory
 from langchain_groq import ChatGroq
-from dotenv import load_dotenv
 import os
 from pandasai.llm.local_llm import LocalLLM
 import pandas as pd
@@ -14,11 +13,8 @@ import streamlit as st
 from bs4 import BeautifulSoup
 import requests
 
-# Load environment variables
-load_dotenv()
-
-# Initialize GROQ chat
-groq_api_key = os.environ['GROQ_API_KEY']
+# Initialize GROQ chat using Streamlit secrets
+groq_api_key = st.secrets["GROQ_API_KEY"]
 llm_groq = ChatGroq(
     groq_api_key=groq_api_key, model_name="llama3-70b-8192",
     temperature=0.2
